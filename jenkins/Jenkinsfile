@@ -1,0 +1,165 @@
+pipeline {
+    agent any
+
+    tools {
+        "org.jenkinsci.plugins.terraform.TerraformInstallation" "Terraform"
+    }
+
+    options {
+        preserveStashes(buildCount: 5)
+        timeout(time: 20, unit: 'MINUTES')
+        skipStagesAfterUnstable()
+    }
+    parameters {
+        string(name: 'ENVIRONMENT', defaultValue: 'PROD', description: 'Environment to deploy')
+    }
+    environment {
+        TF_HOME = tool('Terraform')
+        TF_IN_AUTOMATION = "true"
+        PATH = "$TF_HOME:$PATH"
+    }
+
+    stages {
+        stage('build') {
+            steps {
+                dir('spring-app/') {
+                    script {
+                        def mvnHome = tool 'Maven 3.3.9'
+                        print 'target build version...'
+                        print targetVersion
+                        sh "'${mvnHome}/bin/mvn' -Dintegration-tests.skip=true  clean install"
+                    }
+                }
+            }
+        }
+        stage('tf-init') {
+            steps {
+                dir('aws-infra/vpc/vpc-subnet-infra') {
+                    script {
+                        sh "terraform --version"
+                        sh "terraform init"
+                        sh "whoami"
+                    }
+                }
+            }
+        }
+        stage('vpc-plan') {
+            steps {
+                dir('aws-infra/vpc/vpc-subnet-infra/') {
+                    script {
+                        sh "terraform plan -out vpc-subnet-infra.tfplan; echo \$? > status"
+                        def exitCode = readFile('status').trim()
+                        echo "Terraform Plan Exit Code: ${exitCode}"
+                        stash name: "vpc-subnet-infra-plan", includes: "vpc-subnet-infra.tfplan"
+                    }
+                }
+            }
+        }
+        stage('vpc-apply') {
+            steps {
+                dir('aws-infra/vpc/vpc-subnet-infra/') {
+                    script {
+                        def apply = false
+                        try {
+                            input message: 'confirm apply', ok: 'Apply config'
+                            apply = true;
+                        } catch (err) {
+                            apply = false
+                            sh "terraform destroy -var 'environment=${params.ENVIRONMENT}' -force"
+                        }
+                        if (apply) {
+                            unstash "vpc-subnet-infra-plan"
+                            sh "terraform apply -var 'environment=${params.ENVIRONMENT}' vpc-subnet-infra.tfplan"
+                        }
+                    }
+                }
+            }
+        }
+        stage('code-deploy-plan') {
+            steps {
+                dir('aws-infra/code-deploy/') {
+                    script {
+                        sh "terraform plan -out code-deploy-infra.tfplan; echo \$? > status"
+                        def exitCode = readFile('status').trim()
+                        echo "Terraform Plan Exit Code: ${exitCode}"
+                        stash name: "code-deploy-infra-plan", includes: "code-deploy-infra.tfplan"
+                    }
+                }
+            }
+        }
+        stage('vpc-apply') {
+            steps {
+                dir('aws-infra/code-deploy/') {
+                    script {
+                        def apply = false
+                        try {
+                            input message: 'confirm apply', ok: 'Apply config'
+                            apply = true;
+                        } catch (err) {
+                            apply = false
+                            sh "terraform destroy -var 'environment=${params.ENVIRONMENT}' -force"
+                        }
+                        if (apply) {
+                            unstash "code-deploy-infra-plan"
+                            sh "terraform apply -var 'environment=${params.ENVIRONMENT}' code-deploy-infra.tfplan"
+                        }
+                    }
+                }
+            }
+        }
+        stage('ec2-infra-plan') {
+            steps {
+                dir('aws-infra/ec2-infrastructure/') {
+                    script {
+                        sh "terraform plan -out ec2-app-infra.tfplan; echo \$? > status"
+                        def exitCode = readFile('status').trim()
+                        echo "Terraform Plan Exit Code: ${exitCode}"
+                        stash name: "ec2-app-infra-plan", includes: "ec2-app-infra.tfplan"
+                    }
+                }
+            }
+        }
+        stage('ec2-infra-apply') {
+            steps {
+                dir('aws-infra/ec2-infrastructure/') {
+                    script {
+                        def apply = false
+                        try {
+                            input message: 'confirm apply', ok: 'Apply config'
+                            apply = true;
+                        } catch (err) {
+                            apply = false
+                            sh "terraform destroy -var 'environment=${params.ENVIRONMENT}' -force"
+                        }
+                        if (apply) {
+                            unstash "ec2-app-infra-plan"
+                            sh "terraform apply -var 'environment=${params.ENVIRONMENT}' ec2-app-infra.tfplan"
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+     post {
+       always {
+         deleteDir()
+       }
+
+       success {
+        sendEmail('Successful')
+       }
+
+       failure {
+        sendEmail('Failed')
+       }
+     }
+}
+
+
+def sendEmail(status) {
+    mail(
+            to: "$EMAIL_TO",
+            subject: "Build status " (${currentBuild.fullDisplayName})",
+            body: "Changes:\n " + getChangeString() + "\n\n Check console output at console" + "\n")
+}
