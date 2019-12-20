@@ -1,0 +1,98 @@
+[
+  {
+    "address": {
+      "country": "India",
+      "state": "Madhya Pradesh",
+      "streatName": "Kings-Way",
+      "streatNumber": "01",
+      "pincode": 412201
+    },
+    "contractStartDate": "2019-11-12T17:14:06.495Z",
+    "contractEndDate": "2019-12-01T17:14:06.511Z",
+    "status": "Stopped"
+  },
+  {
+    "address": {
+      "country": "India",
+      "state": "Madhya Pradesh",
+      "streatName": "Kings-Way-5",
+      "streatNumber": "40",
+      "pincode": 412200
+    },
+    "contractStartDate": "2019-11-03T13:14:06.495Z",
+    "contractEndDate": "2019-12-05T111:14:06.511Z",
+    "status": "Stopped"
+  },
+  {
+    "address": {
+      "country": "India",
+      "state": "Madhya Pradesh",
+      "streatName": "Street-12",
+      "streatNumber": "15",
+      "pincode": 412207
+    },
+    "contractStartDate": "2019-11-05T16:10:06.495Z",
+    "contractEndDate": "2019-12-05T10:14:06.511Z",
+    "status": "Stopped"
+  },
+  {
+    "address": {
+      "country": "India",
+      "state": "Madhya Pradesh",
+      "streatName": "Kings-Way-6",
+      "streatNumber": "27",
+      "pincode": 412101
+    },
+    "contractStartDate": "2019-11-21T10:10:06.495Z",
+    "contractEndDate": null,
+    "status": "Running"
+  },
+  {
+    "address": {
+      "country": "India",
+      "state": "Madhya Pradesh",
+      "streatName": "Street-67",
+      "streatNumber": "61",
+      "pincode": 412201
+    },
+    "contractStartDate": "2019-11-20T17:14:06.495Z",
+    "contractEndDate": "2019-12-01T17:14:06.511Z",
+    "status": "Stopped"
+  },
+  {
+    "address": {
+      "country": "India",
+      "state": "Madhya Pradesh",
+      "streatName": "Street-07",
+      "streatNumber": "71",
+      "pincode": 412210
+    },
+    "contractStartDate": "2019-11-28T13:14:06.495Z",
+    "contractEndDate": null,
+    "status": "Running"
+  },
+  {
+    "address": {
+      "country": "India",
+      "state": "Madhya Pradesh",
+      "streatName": "Street-10",
+      "streatNumber": "10",
+      "pincode": 412217
+    },
+    "contractStartDate": "2019-11-26T14:10:06.495Z",
+    "contractEndDate": "2019-12-05T14:14:06.511Z",
+    "status": "Stopped"
+  },
+  {
+    "address": {
+      "country": "India",
+      "state": "Madhya Pradesh",
+      "streatName": "Kings-Way-1",
+      "streatNumber": "81",
+      "pincode": 412203
+    },
+    "contractStartDate": "2019-11-03T10:10:06.495Z",
+    "contractEndDate": null,
+    "status": "Running"
+  }
+]
